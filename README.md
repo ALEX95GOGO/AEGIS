@@ -7,7 +7,7 @@ Official repository for the paper: *AEGIS: Human Attention-based Explainable Gui
 
 ## What do AEGIS provide? Please click to view the video &#x2193;&#x2193;&#x2193;
 
-[![Watch the video](assets/thumbnail.png)](https://www.youtube.com/watch?v=RiyZsicPuQ0)
+[![Watch the video](asset/thumbnail.png)](https://www.youtube.com/watch?v=RiyZsicPuQ0)
 
 
 ## 🚗 Running the CARLA Simulator
