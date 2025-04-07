@@ -17,7 +17,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from env_multiagent_dis import CarFollowing
 from human_model import Actor as h_Model
-from algo.TD3_dis import DRL
+from algo.TD3_car_following import DRL
 import sys
 
 def signal_handler(sig, frame):
