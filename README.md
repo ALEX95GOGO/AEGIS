@@ -29,3 +29,13 @@ tar -xvf CARLA_0.9.14.tar.gz
 ```
 python train_car_following.py --simulator_port 2000
 ```
+
+## 📄 Paper
+
+- __Zhuang Z__, Lu CY, Wang YK, Chang YC, Thomas Do, Lin CT. *"AEGIS: Human Attention-based Explainable Guidance for Intelligent Vehicle Systems"*. **ACM CHI Conference on Human Factors in Computing Systems**, 2025.
+
+You can read our paper on arXiv here:  
+[**AEGIS: Human Attention-based Explainable Guidance for Intelligent Vehicle Systems** (arXiv:2504.05950)](https://arxiv.org/abs/2504.05950)
+
+[![Download PDF](https://img.shields.io/badge/PDF-Download-blue)](https://arxiv.org/pdf/2504.05950)
+
