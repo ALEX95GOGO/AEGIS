@@ -12,12 +12,24 @@ from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter('./algo/checkpoints/log')
 from human_model import Actor as h_Model
 from env_leftturn import LeftTurn
-from utils import set_seed, signal_handler
 import matplotlib
 matplotlib.use('TkAgg')  # Replace 'Agg' with your desired backend
 
 import matplotlib.pyplot as plt
 from algo.TD3_leftturn import DRL
+
+def signal_handler(sig, frame):
+    print('Procedure terminated!')
+    pygame.display.quit()
+    pygame.quit()
+    sys.exit(0)
+
+def set_seed(seed):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 def train_leftturn_task():
     
@@ -27,7 +39,7 @@ def train_leftturn_task():
 
     s_dim = [env.observation_size_width, env.observation_size_height]
     a_dim = env.action_size
-    
+    from algo.TD3_leftturn import DRL
     DRL = DRL(a_dim, s_dim, device=args.device)
     
     exploration_rate = args.initial_exploration_rate 
@@ -97,7 +109,6 @@ def train_leftturn_task():
     
         while not done:
             ## Section DRL's actting ##
-            #import pdb; pdb.set_trace()
             action, risk_pred = DRL.choose_action(state)
             action = np.clip( np.random.normal(action,  exploration_rate), -1, 1)
             
@@ -148,9 +159,7 @@ def train_leftturn_task():
             ## End of Section DRL update ##
             
             ep_reward += reward
-            global_reward_list.append([reward_e,reward_i])
             reward_e_record[i].append(reward_e)
-            reward_i_record[i].append(reward_i)
             
             adopted_action[i].append(action)
 
@@ -208,7 +217,7 @@ def train_leftturn_task():
     scio.savemat('dataleftturn_{}-{}-{}.mat'.format(args.seed,args.algorithm,timeend), mdict={'action_drl': action_drl,'action_final': action_final,
                                                     'stepreward':global_reward_list,'mreward':episode_mean_reward_list,
                                                     'step':episode_duration_list,'reward':episode_total_reward_list,
-                                                    'r_i':reward_i_record,'r_e':reward_e_record})
+                                                    'r_e':reward_e_record})
     
     
 

@@ -11,7 +11,7 @@ from algo.util import hard_update, soft_update
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-MEMORY_CAPACITY = 38400
+MEMORY_CAPACITY = 65536
 BATCH_SIZE = 128
 GAMMA = 0.95
 LR_C = 0.0005
@@ -194,7 +194,7 @@ class DRL:
         
         self.actor = Actor(self.state_dim,self.action_dim).to(self.device)            
         self.actor_target = Actor(self.state_dim,self.action_dim).to(self.device)
-           
+            
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(),LR_A)
         self.actor_scheduler = torch.optim.lr_scheduler.ExponentialLR(self.actor_optimizer, 0.996)
         self.previous_epoch = 0
@@ -237,11 +237,9 @@ class DRL:
 
         ## calculate the predicted values of the critic
         with torch.no_grad():
-            #noise1 = (torch.randn_like(actions) * self.policy_noise).clamp(0, 1)
             noise1 = (torch.randn_like(actions) * self.policy_noise).clamp(-1, 1)
             actor_target, _ = self.actor_target(next_states)
             actor_target = actor_target.detach()
-            #next_actions = (actor_target + noise1).clamp(0, 1)
             next_actions = (actor_target + noise1).clamp(-1, 1)
             #print(next_actions)
             target_q1, target_q2 = self.critic_target([next_states, next_actions])
@@ -259,55 +257,26 @@ class DRL:
             loss_critic.backward()
             self.critic_optimizers.step()
         
-        ##############
-        #criterion = nn.BCELoss().cuda()
-        #import pdb; pdb.set_trace()
-        # Define the new size you want to crop to
-        
         new_height, new_width = 28, 64
-        
-        # Calculate the coordinates to place the new image at the center
-        top = (self.actor.human_map.size(2) - new_height) // 2
-        left = (self.actor.human_map.size(3) - new_width) // 2
-        
+
+        top = (45 - new_height) // 2
+        left = (80 - new_width) // 2
+
         # Perform the crop
         center_cropped_image = self.actor.human_map[:,:, top:top + new_height, left:left + new_width]
         # Since view cannot be used due to the tensor's memory layout, we will use reshape instead
-        #import pdb; pdb.set_trace()
-        #center_cropped_image= self.actor.human_map
         flattened = center_cropped_image.reshape(center_cropped_image.size(0), -1)
         
-        # Apply softmax across the spatial dimension (which is now flattened)
-        #prob_distribution = F.softmax(flattened, dim=1)
-        
-        # Reshape back to the original spatial dimensions [C, H, W]
-        #prob_distribution = prob_distribution.view(center_cropped_image.size())
-
         # Since view cannot be used due to the tensor's memory layout, we will use reshape instead
         flattened_actor = self.actor.padded_saliency.cuda().unsqueeze(0).unsqueeze(0).reshape(center_cropped_image.size(0), -1)
-        
-        #import pdb; pdb.set_trace()
-        #flattened = torch.from_numpy(human_maps).cuda()
-        #flattened_actor = torch.from_numpy(att_maps).cuda()
-        # Apply softmax across the spatial dimension (which is now flattened)
-        #prob_distribution_actor = F.softmax(flattened_actor, dim=1)
-        
-        # Reshape back to the original spatial dimensions [C, H, W]
-        #prob_distribution_actor = prob_distribution_actor.view(center_cropped_image.size())
         
         # Apply softmax to get probability distributions
         prob_distribution = F.softmax(flattened.view(1, -1), dim=1).view_as(flattened)
         prob_distribution_actor = F.softmax(flattened_actor.view(1, -1), dim=1).view_as(flattened_actor)
-        #prob_distribution = (flattened.view(1, -1)).view_as(flattened)/(flattened.shape[1])
-        #prob_distribution_actor = (flattened_actor.view(1, -1)).view_as(flattened_actor)/(flattened_actor.shape[1])
-        
-        #bce_loss = criterion(prob_distribution_actor, prob_distribution)
-        #import pdb; pdb.set_trace()
-        # Convert the first distribution to log-probabilities
+
         log_prob_distribution = F.log_softmax(flattened.view(1, -1), dim=1).view_as(flattened)
         log_prob_distribution_actor = F.log_softmax(flattened_actor.view(1, -1), dim=1).view_as(flattened_actor)
         
-        kl_divergence = kl_loss(prob_distribution_actor.view(1,1,28, 64), prob_distribution.view(1,1,28, 64))
         batch_size = 1
         self.human_att = prob_distribution.view(batch_size,1,28, 64)
         self.machine_att = prob_distribution_actor.view(batch_size,1,28, 64)
@@ -320,6 +289,7 @@ class DRL:
         mae = self.mae_loss(prob_distribution, prob_distribution_actor)
         #import pdb; pdb.set_trace()
         center_cropped_state = self.actor.observation[top:top + new_height, left:left + new_width]
+
         
         #######
         ## update the actor
@@ -327,23 +297,19 @@ class DRL:
             
             pred_actions, pred_dis = self.actor.forward(states)
             
-            
-                        loss_actor = -self.critic([states, pred_actions])[0] 
-            #import pdb; pdb.set_trace()
+            loss_actor = -self.critic([states, pred_actions])[0] 
             loss_distance = self.mse_loss(pred_dis, distance)
-                        if eye == True:
+
+            if eye == True:
                 if self.itera<500:
-                    loss_actor = loss_actor + 0.1* loss_distance + kl_divergence*0.05
+                    loss_actor = loss_actor + 0.1* loss_distance + kl_divergence*0.05/16
                 else:
                     loss_actor = loss_actor + 0.1* loss_distance
             else:
                 loss_actor = loss_actor + 0.1* loss_distance
-            loss_actor = loss_actor + loss_distance*(1/epoch)
+
             loss_actor = loss_actor.mean()
             
-            #print(loss_distance)
-            #print(loss_actor)
-
             self.actor_optimizer.zero_grad()
             if train:
                 loss_actor.backward()
@@ -361,11 +327,11 @@ class DRL:
             
         loss_c = loss_critic.item()
         
-        self.itera += 1 
+        self.itera += 1
         
+        # TDQA priority calculation
         priorities = td_errors
-        #priorities = td_errors + cross_correlation*0.1
-        #priorities = td_errors*kl_divergence
+
         priorities = priorities.cpu().numpy()
         if train: 
             self.replay_buffer.update_priorities(idxs, priorities)
@@ -376,9 +342,9 @@ class DRL:
     def choose_action(self,state):
 
         state = torch.FloatTensor(state).float().unsqueeze(0).permute(0,3,1,2).to(self.device)
-        #import pdb; pdb.set_trace()
+
         action, dis = self.actor.forward(state)
-        
+
         action = action.detach().cpu()
         dis = dis.detach()
         action = action.squeeze(0).cpu().numpy()
@@ -437,14 +403,4 @@ class DRL:
         self.actor_target.load_state_dict(checkpoint['state_dict'])
         self.actor_optimizer.load_state_dict(checkpoint['optim_dict'])
 
-    '''
-    def load(self, log_dir):
-        checkpoint = torch.load(log_dir)
-        self.actor.load_state_dict(checkpoint['actor'])
-        self.actor_target.load_state_dict(checkpoint['actor_target'])
-        self.actor_optimizer.load_state_dict(checkpoint['actor_optimizer'])
-        self.critic.load_state_dict(checkpoint['critic'])
-        self.critic_target.load_state_dict(checkpoint['critic_target'])
-        self.critic_optimizers.load_state_dict(checkpoint['critic_optimizers'])
-    '''
        

@@ -106,7 +106,7 @@ class Actor(nn.Module):
         self.v_norm = nn.LayerNorm(self.norm_shape, elementwise_affine=True)
         # Load the model only once during initialization
         self.model = Model().cuda().eval()
-        checkpoint = torch.load('checkpoints/model_epoch_2.tar')
+        checkpoint = torch.load('algo/checkpoints/model_epoch_2.tar')
         self.model.load_state_dict(checkpoint['state_dict'])
 
     
@@ -121,21 +121,23 @@ class Actor(nn.Module):
         
         with torch.no_grad():
             self.model = Model().cuda().eval()
-            checkpoint = torch.load('/data/zhuzhuan/VR_driving_data/data/script/CDNN_scenario1/ckpts/cdnn/model_epoch_2.tar')
+            checkpoint = torch.load('algo/checkpoints/model_epoch_2.tar')
             self.model.load_state_dict(checkpoint['state_dict'])
     
             rgb_image = torch.cat([inp[:,1:2],inp[:,1:2],inp[:,1:2]], axis=1)
             # Desired new size
             new_size = (72,128)
+            #import pdb; pdb.set_trace()
             # Resize/Interpolate the tensor to the new size
             rgb_image = F.interpolate(rgb_image, size=new_size, mode='bilinear', align_corners=False)
             self.observation = inp[0,0]
-            
             output = self.model(rgb_image)
             self.human_map = F.interpolate(output, size=(45, 80), mode='bilinear',align_corners=False).clone()
-                    
+
+        
         x = inp.unsqueeze(0) if len(inp.shape)==3 else inp
         N, Cin, H, W = x.shape
+        #import pdb; pdb.set_trace()
         x = F.max_pool2d( self.conv1(x), 2)
         x = F.max_pool2d( self.conv2(x), 2)
         
@@ -148,7 +150,7 @@ class Actor(nn.Module):
         x = torch.cat([x,spatial_coords],dim=1)
         x = x.permute(0,2,3,1)
         x = x.flatten(1,2)
-        
+        #import pdb; pdb.set_trace()
         K = self.k_proj(x)                                                 
         K = self.k_norm(K) 
         
@@ -161,14 +163,23 @@ class Actor(nn.Module):
         A = A / np.sqrt(self.node_size)
         A = torch.nn.functional.softmax(A,dim=2) 
 
+        #with torch.no_grad():
         self.att_map = A.clone()
         
+        #max_saliency = A[0].max(dim=0)[0].view(7,16)
         max_saliency = A[0].mean(dim=0).view(7,16)
 
         interpolated_saliency_60 = F.interpolate(max_saliency.unsqueeze(0).unsqueeze(0), size=(28, 64), mode='bilinear',align_corners=False)
-        
+        #import pdb; pdb.set_trace()
+        # Use padding to make it 80x80
+        padding_size_x = 8.5
+        padding_size_y = 8
+        #padded_saliency = F.pad(interpolated_saliency_60, (8, padding_size_y, 9, padding_size_y), mode='constant', value=0)
+        padded_saliency = interpolated_saliency_60
+        self.padded_saliency = padded_saliency.squeeze()
+        # Define the new size you want to crop to
+        new_height, new_width = 28, 64
         E = torch.einsum('bfc,bcd->bfd',A,V)                               
-               	
         x = x.reshape(E.size(0),-1)
         
         x = F.relu(self.fc1(x))
@@ -178,6 +189,7 @@ class Actor(nn.Module):
         dis = self.fc5(fl)
         self.ttc = dis
         return x, dis
+
 
 ### This critic network is established on MLP structure.
 class Critic(nn.Module):

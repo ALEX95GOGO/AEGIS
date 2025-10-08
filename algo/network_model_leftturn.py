@@ -108,7 +108,7 @@ class Actor(nn.Module):
         # Load the model only once during initialization
         
         self.model = Model().cuda()
-        checkpoint = torch.load('checkpoints/model_epoch_10.tar')
+        checkpoint = torch.load('algo/checkpoints/model_epoch_10.tar')
         
         self.model.load_state_dict(checkpoint['state_dict'])
 
@@ -128,8 +128,7 @@ class Actor(nn.Module):
             new_size = (72,128)
             
             self.model = Model().cuda()
-            checkpoint = torch.load('/data/zhuzhuan/VR_driving_data/data/script/CDNN_scenario2/ckpts/cdnn/model_epoch_10.tar')
-            #checkpoint = torch.load('/data/zhuzhuan/VR_driving_data/data/script/CDNN_scenario2/ckpts/cdnn/model_epoch_2.tar')
+            checkpoint = torch.load('algo/checkpoints/model_epoch_10.tar')
             self.model.load_state_dict(checkpoint['state_dict'])
         
             # Resize/Interpolate the tensor to the new size

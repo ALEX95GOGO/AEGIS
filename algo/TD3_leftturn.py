@@ -161,7 +161,6 @@ def information_gain(y_true, y_pred, y_base, eps=1e-7):
     return ig
 
 class DRL:
-        
     def __init__(self, action_dim, state_dim, device='cuda', LR_C = LR_C, LR_A = LR_A):
 
         self.device = device
