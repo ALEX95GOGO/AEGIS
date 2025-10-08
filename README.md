@@ -5,6 +5,21 @@ Official repository for the paper: *AEGIS: Human Attention-based Explainable Gui
 
 ---
 
+## ⚙️ Create the Environment
+
+Make sure you have [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
+
+Then, run the following command in your terminal:
+
+```bash
+conda env create -f environment.yml
+```
+or 
+```bash
+conda create -n aegis python==3.7
+conda activate aegis
+pip install -r requirements.txt
+```
 ## What do AEGIS provide? Please click to view the video &#x2193;&#x2193;&#x2193;
 
 [![Watch the video](asset/thumbnail.png)](https://www.youtube.com/watch?v=RiyZsicPuQ0)
@@ -29,6 +44,12 @@ tar -xvf CARLA_0.9.14.tar.gz
 ```
 python train_car_following.py --simulator_port 2000
 ```
+
+Training AEGIS for the Left-Turn Scenario
+```
+python train_left_turn.py --simulator_port 2000
+```
+
 
 ## 📄 Paper
 
