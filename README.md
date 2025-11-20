@@ -50,6 +50,11 @@ Training AEGIS for the Left-Turn Scenario
 python train_left_turn.py --simulator_port 2000
 ```
 
+## Evaluate AEGIS for the Car-Following Scenario
+```
+python eval_car_following_save.py
+```
+You should be able to visualize the machine attention using this evalutation script.
 
 ## 📄 Paper
 
