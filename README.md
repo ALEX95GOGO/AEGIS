@@ -56,6 +56,12 @@ python eval_car_following_save.py
 ```
 You should be able to visualize the machine attention using this evalutation script.
 
+## Dataset
+
+The eye-tracking data and corresponding frame images can be downloaded from the following link:
+
+https://huggingface.co/datasets/zzhuan/AEGIS_dataset/tree/main
+
 ## 📄 Paper
 
 - __Zhuang Z__, Lu CY, Wang YK, Chang YC, Thomas Do, Lin CT. *"AEGIS: Human Attention-based Explainable Guidance for Intelligent Vehicle Systems"*. **ACM CHI Conference on Human Factors in Computing Systems**, 2025.
