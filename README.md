@@ -52,20 +52,43 @@ python train_left_turn.py --simulator_port 2000
 
 ## Evaluate AEGIS for the Car-Following Scenario
 ```
-python eval_car_following_save.py
+python eval_car_following_save.py --bin-file "S07\recording.bin" --out-dir "output"
 ```
 You should be able to visualize the machine attention using this evalutation script.
 
 ## Dataset
 
-The eye-tracking data and corresponding frame images can be downloaded from the following link:
+We use a recompiled version of CARLA by **DReyeVR** to collect eye-tracking data. The data collection platform is built upon the following open-source project:  
+https://github.com/HARPLab/DReyeVR
 
+To reproduce the dataset, please download the replay files from:  
 https://huggingface.co/datasets/zzhuan/AEGIS_dataset/tree/main
+
+Frame images and corresponding eye-tracking annotations can be generated using the provided replay script:
+
+```bash
+cd replay_save_image
+python start_replaying_spawn_cam.py
+```
+
+
 
 ## 📄 Paper
 
 - __Zhuang Z__, Lu CY, Wang YK, Chang YC, Thomas Do, Lin CT. *"AEGIS: Human Attention-based Explainable Guidance for Intelligent Vehicle Systems"*. **ACM CHI Conference on Human Factors in Computing Systems**, 2025.
 
+
+## citation
+
+```
+@inproceedings{silvera2022dreyevr,
+  title={DReyeVR: Democratizing Virtual Reality Driving Simulation for Behavioural \& Interaction Research},
+  author={Silvera, Gustavo and Biswas, Abhijat and Admoni, Henny},
+  booktitle={Proceedings of the 2022 ACM/IEEE International Conference on Human-Robot Interaction},
+  pages={639--643},
+  year={2022}
+}
+```
 You can read our paper on arXiv here:  
 [**AEGIS: Human Attention-based Explainable Guidance for Intelligent Vehicle Systems** (arXiv:2504.05950)](https://arxiv.org/abs/2504.05950)
 
