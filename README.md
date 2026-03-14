@@ -81,12 +81,12 @@ python start_replaying_spawn_cam.py
 ## citation
 
 ```
-@inproceedings{silvera2022dreyevr,
-  title={DReyeVR: Democratizing Virtual Reality Driving Simulation for Behavioural \& Interaction Research},
-  author={Silvera, Gustavo and Biswas, Abhijat and Admoni, Henny},
-  booktitle={Proceedings of the 2022 ACM/IEEE International Conference on Human-Robot Interaction},
-  pages={639--643},
-  year={2022}
+@inproceedings{zhuang2025aegis,
+  title={Aegis: Human attention-based explainable guidance for intelligent vehicle systems},
+  author={Zhuang, Zhuoli and Lu, Cheng-You and Chang, Yu-Cheng Fred and Wang, Yu-Kai and Do, Thomas and Lin, Chin-Teng},
+  booktitle={Proceedings of the 2025 CHI Conference on Human Factors in Computing Systems},
+  pages={1--19},
+  year={2025}
 }
 ```
 You can read our paper on arXiv here:  
